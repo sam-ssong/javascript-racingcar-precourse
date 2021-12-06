@@ -1,3 +1,6 @@
+/* eslint-disable consistent-return */
+/* eslint-disable class-methods-use-this */
+/* eslint-disable no-undef */
 export default class Car {
   constructor(name) {
     this.name = name;

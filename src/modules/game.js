@@ -1,17 +1,16 @@
-import $ from './utils.js';
-import { isValidatedCarInfo } from './input.js';
+/* eslint-disable class-methods-use-this */
+/* eslint-disable import/extensions */
+import { $ } from './helpers/utils.js';
 import Car from './car.js';
+import Render from './render.js';
+import Input, { isValidatedCarInfo } from './input.js';
 
 export default class Game {
-  constructor() {
-    this.cars = [];
-    this.count = 0;
-    this.init();
-  }
-
   init() {
     this.setBinds();
     this.setEvents();
+    this.render = new Render();
+    this.input = new Input();
   }
 
   setBinds() {
@@ -35,7 +34,7 @@ export default class Game {
     if (isValidatedCarInfo(value)) {
       const cars = value.split(',');
 
-      this.cars = [...cars].map((car) => new Car(car));
+      this.input.cars = [...cars].map((car) => new Car(car));
     }
 
     if (this.isGameAvailable()) {
@@ -49,7 +48,7 @@ export default class Game {
     const count = Number($('#racing-count-input').value);
 
     if (!Number.isNaN(count)) {
-      this.count = count;
+      this.input.count = count;
     }
     if (this.isGameAvailable()) {
       this.play();
@@ -57,18 +56,29 @@ export default class Game {
   }
 
   isGameAvailable() {
-    return !!this.cars.length && !!this.count;
+    return !!this.input.cars.length && !!this.input.count;
   }
 
   play() {
-    const $app = $('#app');
-
-    for (let i = 0; i < this.count; i += 1) {
-      [...this.cars].forEach((car) => {
-        car.move();
-        const add = `${car.name} : ${car.position}`;
-        $app.append(add);
-      });
+    for (let i = 0; i < this.input.count; i += 1) {
+      this.takeTurn(this.input.cars);
+      this.takeTurn(this.input2.cars);
     }
+    const winners = this.getWinners(this.input.cars);
+    this.render.result(winners);
+  }
+
+  takeTurn(cars) {
+    [...cars].forEach((car) => {
+      car.move();
+      this.render.carPosition(car);
+    });
+  }
+
+  getWinners(cars) {
+    const maxValue = Object.values(cars).reduce((acc, cur) => {
+      return acc > cur.position ? acc : cur.position;
+    }, 0);
+    return [...cars].filter((car) => car.position === maxValue);
   }
 }
